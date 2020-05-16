@@ -1,0 +1,18 @@
+<p-autoComplete
+  [forceSelection]="true"
+  [suggestions]="suggestions$ | async"
+  field="label"
+  [formControl]="formControl"
+  (completeMethod)="onSearch($event)"
+>
+  <ng-template pTemplate="default">
+    <p-tree
+      selectionMode="single"
+      [value]="filteredList$ | async"
+      (onNodeExpand)="onStopPropagation($event)"
+      (onNodeCollapse)="onStopPropagation($event)"
+      (onNodeSelect)="onNodeSelect($event)">
+    </p-tree>
+  </ng-template>
+</p-autoComplete>
+
