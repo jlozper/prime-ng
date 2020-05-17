@@ -18,7 +18,7 @@ import { AutocompleteEvent } from './models/autocomplete-event.model';
 export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit {
 
   @Input() listData$: Observable<TreeNode[]>; // Listado de datos a utilizar en el tree
-  @Input() field = 'label'; // Campo a mostrar en caso de utilizar objectos como valor en el autocomplete
+  @Input() field = 'label'; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
 
   formControl: FormControl;
 
@@ -83,8 +83,8 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
 
   /*
    * Método recursivo para el filtrado de nodos en función del término de búsqueda.
-   * Si el nodo contiene el término de búsqueda, se muesta este y no se comprueban los hijos.
-   * Si el nodo no contiene el término de búsqueda, se comprueban en los hijos (si existen).
+   * Si el nodo contiene el término de búsqueda, se muesta éste y no se comprueban los hijos.
+   * Si el nodo no contiene el término de búsqueda, se comprueban los hijos (si existen).
    * Si los hijos contienen el término de búsqueda, se muestra la ruta completa con los padres expandidos
    */
   private filterData(data: TreeNode[], searchTerm: string): TreeNode[] {

@@ -1,7 +1,7 @@
 <p-autoComplete
   [forceSelection]="true"
   [suggestions]="suggestions$ | async"
-  field="label"
+  [field]="field"
   [formControl]="formControl"
   (completeMethod)="onSearch($event)"
 >
