@@ -9,6 +9,7 @@
     <p-tree
       selectionMode="single"
       [value]="filteredList$ | async"
+      [emptyMessage]="emptyMessage"
       (onNodeExpand)="onStopPropagation($event)"
       (onNodeCollapse)="onStopPropagation($event)"
       (onNodeSelect)="onNodeSelect($event)">

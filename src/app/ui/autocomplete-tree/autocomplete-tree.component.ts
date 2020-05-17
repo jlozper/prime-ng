@@ -17,8 +17,9 @@ import { AutocompleteEvent } from './models/autocomplete-event.model';
 })
 export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit {
 
-  @Input() listData$: Observable<TreeNode[]>; // Listado de datos a utilizar en el tree
   @Input() field = 'label'; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
+  @Input() emptyMessage = 'No existen resultados'; // Mensaje en caso de que no se obtengan resultados en la búsqueda
+  @Input() listData$: Observable<TreeNode[]>; // Listado de datos a utilizar en el tree
 
   formControl: FormControl;
 
