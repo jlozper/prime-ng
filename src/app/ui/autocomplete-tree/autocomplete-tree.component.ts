@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy, Self } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef } from '@angular/core';
 import { FormControl, ControlValueAccessor, NgControl  } from '@angular/forms';
 
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -30,7 +30,10 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
   onChange = (_: any) => {};
   onTouch = () => {};
 
-  constructor(@Self() public ngControl: NgControl) {
+  constructor(
+    @Self() public ngControl: NgControl,
+    private changeDetectionRef: ChangeDetectorRef
+  ) {
     ngControl.valueAccessor = this;
   }
 
@@ -52,6 +55,11 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
   // Método correspondiente al ControlValueAccessor
   registerOnTouched(fn: any): void {
     this.onTouch = fn;
+  }
+
+  // Método correspondiente al ControlValueAccessor
+  setDisabledState(isDisabled: boolean) {
+    this.changeDetectionRef.markForCheck(); // Rerenderizamos la vista por el uso del changeDetectionRef = OnPush
   }
 
   // onSearch del autocomplete
