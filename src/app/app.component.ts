@@ -1,9 +1,13 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
+import { Observable, BehaviorSubject, merge, Subject } from 'rxjs';
 import { TreeNode } from 'primeng/api/treenode';
-import { AppService } from './app.service';
-import { FormControl, Validators } from '@angular/forms';
-import { tap } from 'rxjs/operators';
+import { AutocompleteTreeService } from './services/autocomplete-tree.service';
+import { FormControl, Validators, FormGroup } from '@angular/forms';
+import { tap, switchMap, takeUntil } from 'rxjs/operators';
+import { ListData } from './ui/autocomplete-table/models/list-data.model';
+import { TableColumn } from './ui/autocomplete-table/models/table-column.model';
+import { SearchParams } from './ui/autocomplete-table/models/search-params.model';
+import { AutocompleteTableService } from './services/autocomplete-table.service';
 
 @Component({
   selector: 'app-root',
@@ -11,16 +15,63 @@ import { tap } from 'rxjs/operators';
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements OnInit {
-  listData$: Observable<TreeNode[]>;
+export class AppComponent implements OnInit, OnDestroy {
+  treeListData$: Observable<TreeNode[]>;
 
-  control = new FormControl({value: '', disabled: false}, Validators.required);
+  tableListData$: Observable<ListData>;
+  tableColumns$: Observable<TableColumn<any>[]>;
 
-  constructor(private appService: AppService) {}
+  private tableColumnsSubject = new BehaviorSubject<TableColumn<any>[]>([]);
+  private tableSearchSubject = new BehaviorSubject<SearchParams>({} as SearchParams);
+  private destroySubject = new Subject<boolean>();
+
+  autocomplete: FormGroup;
+
+  constructor(
+    private autocompleteTreeService: AutocompleteTreeService,
+    private autocompleteTableService: AutocompleteTableService
+  ) {}
 
   ngOnInit() {
-    this.listData$ = this.appService.getData();
-    this.control.valueChanges.pipe(tap(value => console.log('control value: ', value))).subscribe();
+    this.createForm();
+    merge(
+      this.autocomplete.get('tree').valueChanges.pipe(tap(value => console.log('autocomplete-tree value: ', value))),
+      this.autocomplete.get('table').valueChanges.pipe(tap(value => console.log('autocomplete-table value: ', value)))
+    )
+      .pipe(takeUntil(this.destroySubject))
+      .subscribe();
+
+    this.treeListData$ = this.autocompleteTreeService.fetchData();
+
+    this.tableListData$ = this.getTableData();
+    this.tableColumns$ = this.tableColumnsSubject.asObservable();
+    this.tableColumnsSubject.next([
+      { label: 'Nombre', field: 'name' },
+      { label: 'Identificador', field: 'id' }
+    ]);
+  }
+
+  ngOnDestroy() {
+    this.destroySubject.next();
+    this.destroySubject.complete();
+  }
+
+  onTableSearch(searchParams: SearchParams): void {
+    this.tableSearchSubject.next(searchParams);
+  }
+
+  private getTableData(): Observable<ListData> {
+    return this.tableSearchSubject
+      .pipe(
+        switchMap(params => this.autocompleteTableService.fetchData(params)),
+      );
+  }
+
+  private createForm(): void {
+    this.autocomplete = new FormGroup({
+      tree: new FormControl({value: '', disabled: false}, Validators.required),
+      table: new FormControl({value: '', disabled: false}),
+    });
   }
 
 }

@@ -1,2 +1,18 @@
-<h3>Autocomplete + tree</h3>
-<pri-autocomplete-tree [formControl]="control" [listData$]="listData$"></pri-autocomplete-tree>
+<form [formGroup]="autocomplete">
+  <h3>Autocomplete + tree</h3>
+  <pri-autocomplete-tree
+    formControlName="tree"
+    [listData$]="treeListData$"
+  ></pri-autocomplete-tree>
+
+  <br>
+  <br>
+
+  <h3>Autocomplete + table</h3>
+  <pri-autocomplete-table
+    formControlName="table"
+    [listData$]="tableListData$"
+    [tableColumns$]="tableColumns$"
+    (searchTermChanges)="onTableSearch($event)">
+  </pri-autocomplete-table>
+</form>

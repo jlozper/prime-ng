@@ -2,7 +2,7 @@ import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetector
 import { FormControl, ControlValueAccessor, NgControl  } from '@angular/forms';
 
 import { Observable, BehaviorSubject } from 'rxjs';
-import { withLatestFrom, map } from 'rxjs/operators';
+import { withLatestFrom, map, shareReplay } from 'rxjs/operators';
 
 import { TreeNode } from 'primeng/api/treenode';
 
@@ -19,6 +19,7 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
 
   @Input() field = 'label'; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
   @Input() emptyMessage = 'No existen resultados'; // Mensaje en caso de que no se obtengan resultados en la búsqueda
+  @Input() selectionMode = 'single';
   @Input() listData$: Observable<TreeNode[]>; // Listado de datos a utilizar en el tree
 
   formControl: FormControl;
@@ -87,6 +88,7 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
       .pipe(
         withLatestFrom(this.listData$),
         map(([searchTerm, listData]) => this.filterData(listData, searchTerm)),
+        shareReplay(1),
       );
   }
 
@@ -111,7 +113,7 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
       }, []);
   }
 
-  // Comprueba si una cadena contiene una subcadena sin tener en cuenta mayúscualas o acentos
+  // Comprueba si una cadena contiene una subcadena sin tener en cuenta mayúsculas o acentos
   private includes(str: string, substr: string): boolean {
     return this.normalize(str).includes(this.normalize(substr));
   }

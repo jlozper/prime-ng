@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { TreeNode } from 'primeng/api/treenode';
+import { shareReplay } from 'rxjs/operators';
 
 const data = [
   {
@@ -69,11 +70,12 @@ const data = [
 @Injectable({
   providedIn: 'root'
 })
-export class AppService {
+export class AutocompleteTreeService {
 
   constructor() { }
 
-  getData(): Observable<TreeNode[]> {
-    return of(data);
+  fetchData(): Observable<TreeNode[]> {
+    return of(data)
+      .pipe(shareReplay(1));
   }
 }

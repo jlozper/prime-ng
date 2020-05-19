@@ -1,0 +1,16 @@
+:host {
+  p-autocomplete ::ng-deep .ui-autocomplete-panel {
+    max-height: initial !important;
+  }
+
+  ::ng-deep p-paginator .ui-paginator-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 11px;
+    justify-content: center;
+
+    .ui-paginator-current {
+      width: 100%;
+    }
+  }
+}
