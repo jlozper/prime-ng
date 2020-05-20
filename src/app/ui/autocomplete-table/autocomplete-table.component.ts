@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef, Output, EventEmitter, OnDestroy, ViewChild, Optional } from '@angular/core';
 import { FormControl, ControlValueAccessor, NgControl  } from '@angular/forms';
 
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
@@ -7,6 +7,7 @@ import { pluck, tap, withLatestFrom, shareReplay, takeUntil } from 'rxjs/operato
 import { LazyLoadEvent } from 'primeng/api/public_api';
 
 import { AutocompleteEvent, TableColumn, ListData, SearchParams } from './models';
+import { Paginator } from 'primeng/paginator';
 
 
 @Component({
@@ -17,8 +18,9 @@ import { AutocompleteEvent, TableColumn, ListData, SearchParams } from './models
 })
 export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnInit, OnDestroy {
 
-  @Input() pageSize;
-  @Input() field; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
+  @Input() pageSize: number;
+  @Input() pageLinks = 3;
+  @Input() field: string; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
   @Input() emptyMessage = 'No existen resultados'; // Mensaje en caso de que no se obtengan resultados en la búsqueda
   @Input() tableColumns$: Observable<TableColumn<T>[]>;
   @Input() listData$: Observable<ListData>; // Listado de datos a utilizar en el tree
@@ -26,18 +28,17 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
   @Output() searchTermChanges = new EventEmitter<SearchParams>();
 
   // Variables relacionadas con la tabla
-  tableData$: Observable<object[]>;
+  tableData$: Observable<T[]>;
   totalRecords$: Observable<number>;
   pageSize$: BehaviorSubject<number>;
   private pageIndexSubject = new BehaviorSubject<number>(0);
 
   // Variables relacionadas con el autocomplete
-  suggestions$ = new BehaviorSubject<any[]>([]);
+  suggestions$ = new BehaviorSubject<T[]>([]);
   private searchTermSubject = new BehaviorSubject<string>('');
 
   // Variables
   formControl: FormControl;
-
   private lazyLoadSubject = new Subject<boolean>(); // Subject para el evento de obtención de datos del servidor
   private destroySubject = new Subject<boolean>();
 
@@ -45,7 +46,7 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
   onTouch = () => {};
 
   constructor(
-    @Self() public ngControl: NgControl,
+    @Self() @Optional() public ngControl: NgControl,
     private changeDetectionRef: ChangeDetectorRef
   ) {
     ngControl.valueAccessor = this;
@@ -62,7 +63,7 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
     // Establecemos el campo a mostrar en el autocomplete si no se ha pasado como parámetro
     this.tableColumns$ = this.tableColumns$.pipe(tap(columns => this.field = this.field || columns[0].field));
 
-    // Única subscripción a eventos
+    // Punto único de subscripción a eventos
     this.fetchData().pipe(takeUntil(this.destroySubject)).subscribe();
   }
 
@@ -93,16 +94,15 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
 
   // onSearch del autocomplete
   onSearch(event: AutocompleteEvent): void {
-    this.suggestions$.next([{}]); // Un único valor nos permite mostrar el template (el tree)
+    this.suggestions$.next([{} as T]); // Un único valor nos permite mostrar el template (el tree)
     this.searchTermSubject.next(event.query);
     this.lazyLoadSubject.next();
   }
 
   // onRowSelect de la tabla
   onRowSelect(event: MouseEvent, row: T): void {
-    const value = row;
-    this.suggestions$.next([value]); // Pasamos el valor al autocomplete para que pueda ser mostrado
-    this.formControl.setValue(value); // Seteamos el valor del control con el nodo seleccionado en el tree
+    this.suggestions$.next([row]); // Pasamos el valor al autocomplete para que pueda ser mostrado
+    this.formControl.setValue(row); // Seteamos el valor del control con el nodo seleccionado en el tree
   }
 
   // onLazyLoad de la tabla

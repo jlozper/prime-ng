@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef, Optional } from '@angular/core';
 import { FormControl, ControlValueAccessor, NgControl  } from '@angular/forms';
 
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -33,7 +33,7 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
   onTouch = () => {};
 
   constructor(
-    @Self() public ngControl: NgControl,
+    @Self() @Optional() public ngControl: NgControl,
     private changeDetectionRef: ChangeDetectorRef
   ) {
     ngControl.valueAccessor = this;
@@ -103,9 +103,9 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
       .reduce((filteredData, node) => {
         if (node.label && this.includes(node.label, searchTerm)) {
           filteredData.push(node);
-        } else if (node.children?.length) {
+        } else if (node.children && node.children.length) {
           const filteredChildren = this.filterData(node.children, searchTerm);
-          if (filteredChildren?.length) {
+          if (filteredChildren && filteredChildren.length) {
             filteredData.push({ ...node, children: filteredChildren, expanded: true });
           }
         }

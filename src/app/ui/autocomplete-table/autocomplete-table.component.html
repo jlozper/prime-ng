@@ -4,7 +4,6 @@
   [field]="field"
   [formControl]="formControl"
   (completeMethod)="onSearch($event)"
-  
 >
   <ng-template pTemplate="default">
     <p-table
@@ -18,7 +17,7 @@
       [alwaysShowPaginator]="false"
       [totalRecords]="totalRecords$ | async"
       [rows]="pageSize$ | async"
-      [pageLinks]="3"
+      [pageLinks]="pageLinks"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="{first} - {last} de {totalRecords}"
       (onLazyLoad)="onLazyLoad($event)"
