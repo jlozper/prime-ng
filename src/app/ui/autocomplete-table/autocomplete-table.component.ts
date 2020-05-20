@@ -1,15 +1,12 @@
 import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { FormControl, ControlValueAccessor, NgControl  } from '@angular/forms';
 
-import { Observable, BehaviorSubject, Subject, merge } from 'rxjs';
-import { pluck, tap, withLatestFrom, shareReplay, takeUntil, map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, Subject } from 'rxjs';
+import { pluck, tap, withLatestFrom, shareReplay, takeUntil } from 'rxjs/operators';
 
 import { LazyLoadEvent } from 'primeng/api/public_api';
 
-import { AutocompleteEvent } from '../autocomplete-tree/models/autocomplete-event.model';
-import { TableColumn } from './models/table-column.model';
-import { ListData, PaginationData } from './models/list-data.model';
-import { SearchParams } from './models/search-params.model';
+import { AutocompleteEvent, TableColumn, ListData, SearchParams } from './models';
 
 
 @Component({
@@ -20,6 +17,7 @@ import { SearchParams } from './models/search-params.model';
 })
 export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnInit, OnDestroy {
 
+  @Input() pageSize;
   @Input() field; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
   @Input() emptyMessage = 'No existen resultados'; // Mensaje en caso de que no se obtengan resultados en la búsqueda
   @Input() tableColumns$: Observable<TableColumn<T>[]>;
@@ -27,15 +25,20 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
 
   @Output() searchTermChanges = new EventEmitter<SearchParams>();
 
+  // Variables relacionadas con la tabla
   tableData$: Observable<object[]>;
-  paginationData$: Observable<PaginationData>;
+  totalRecords$: Observable<number>;
+  pageSize$: BehaviorSubject<number>;
+  private pageIndexSubject = new BehaviorSubject<number>(0);
 
+  // Variables relacionadas con el autocomplete
   suggestions$ = new BehaviorSubject<any[]>([]);
+  private searchTermSubject = new BehaviorSubject<string>('');
 
+  // Variables
   formControl: FormControl;
 
-  private searchSubject = new BehaviorSubject<string>(''); // Subject para el evento de búsqueda del autocomplete
-  private lazyLoadSubject = new BehaviorSubject<number>(0); // Subject para el evento de paginación del tamplate
+  private lazyLoadSubject = new Subject<boolean>(); // Subject para el evento de obtención de datos del servidor
   private destroySubject = new Subject<boolean>();
 
   onChange = (_: any) => {};
@@ -52,26 +55,15 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
     this.formControl = this.ngControl.control as FormControl; // Obtenemos la instanacia del control del host (autocomplete-tree)
 
     this.listData$ = this.listData$.pipe(shareReplay(1));
-
-    this.tableData$ = this.listData$
-      .pipe(
-        pluck('tableData'),
-        shareReplay(1),
-      );
-
-    this.paginationData$ = this.listData$
-      .pipe(
-        pluck('paginationData'),
-        shareReplay(1),
-      );
+    this.tableData$ = this.listData$.pipe(pluck('tableData'));
+    this.totalRecords$ = this.listData$.pipe(pluck('totalRecords'));
+    this.pageSize$ = new BehaviorSubject(this.pageSize || 10);
 
     // Establecemos el campo a mostrar en el autocomplete si no se ha pasado como parámetro
     this.tableColumns$ = this.tableColumns$.pipe(tap(columns => this.field = this.field || columns[0].field));
 
     // Única subscripción a eventos
-    this.fetchData()
-      .pipe(takeUntil(this.destroySubject))
-      .subscribe();
+    this.fetchData().pipe(takeUntil(this.destroySubject)).subscribe();
   }
 
   ngOnDestroy() {
@@ -102,7 +94,8 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
   // onSearch del autocomplete
   onSearch(event: AutocompleteEvent): void {
     this.suggestions$.next([{}]); // Un único valor nos permite mostrar el template (el tree)
-    this.searchSubject.next(event.query); // Pasamos el término de búsqueda al Subject del evento
+    this.searchTermSubject.next(event.query);
+    this.lazyLoadSubject.next();
   }
 
   // onRowSelect de la tabla
@@ -114,7 +107,9 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
 
   // onLazyLoad de la tabla
   onLazyLoad(event: LazyLoadEvent) {
-    this.lazyLoadSubject.next(event.first);
+    const pageSize = event.first / event.rows;
+    this.pageIndexSubject.next(pageSize);
+    this.lazyLoadSubject.next();
   }
 
   // onClick en la tabla
@@ -126,31 +121,12 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
 
   // Flujo del evento de obtención de datos
   private fetchData(): Observable<any> {
-    return merge(
-      this.fromSearch(),
-      this.fromPaginator()
-    )
-      .pipe(
-        tap(([searchTerm, paginationData]) => this.searchTermChanges.emit({ searchTerm, paginationData })),
-      );
-  }
-
-  // Obtener datos tras búsqueda del autocomplete
-  private fromSearch(): Observable<[string, PaginationData]> {
-    return this.searchSubject
-      .pipe(
-        withLatestFrom(this.paginationData$)
-      );
-  }
-
-  // Obtener datos tras utilizar el paginador de la tabala
-  private fromPaginator(): Observable<[string, PaginationData]> {
     return this.lazyLoadSubject
       .pipe(
-        withLatestFrom(this.paginationData$),
-        map(([first, paginationData]) => [this.searchSubject.value, {
-          ...paginationData, pageIndex: first / paginationData.pageSize
-        }])
+        withLatestFrom(this.searchTermSubject, this.pageSize$, this.pageIndexSubject),
+        tap(([ignore, searchTerm, pageSize, pageIndex]) =>
+          this.searchTermChanges.emit({ searchTerm, paginationData: { pageSize, pageIndex }})
+        ),
       );
   }
 }

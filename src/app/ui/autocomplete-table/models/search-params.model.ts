@@ -1,4 +1,4 @@
-import { PaginationData } from './list-data.model';
+import { PaginationData } from '.';
 
 export interface SearchParams {
   searchTerm: string;

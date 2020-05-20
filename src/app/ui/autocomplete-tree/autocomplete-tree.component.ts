@@ -6,8 +6,8 @@ import { withLatestFrom, map, shareReplay } from 'rxjs/operators';
 
 import { TreeNode } from 'primeng/api/treenode';
 
-import { TreeEvent } from './models/tree-event.model';
-import { AutocompleteEvent } from './models/autocomplete-event.model';
+import { AutocompleteEvent, TreeEvent } from './models';
+
 
 @Component({
   selector: 'pri-autocomplete-tree',

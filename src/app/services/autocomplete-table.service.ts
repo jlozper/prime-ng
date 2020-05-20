@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ListData, PaginationData } from '../ui/autocomplete-table/models/list-data.model';
-import { SearchParams } from '../ui/autocomplete-table/models/search-params.model';
 import { Observable, of } from 'rxjs';
-import { tap, shareReplay } from 'rxjs/operators';
+
+import { SearchParams, ListData, PaginationData } from '../ui/autocomplete-table/models';
+
 
 const dbData = [
   {
@@ -423,11 +423,7 @@ export class AutocompleteTableService {
 
     return of({
       tableData: data,
-      paginationData: {
-        totalRecords,
-        pageIndex: paginationData.pageIndex || 0,
-        pageSize: paginationData.pageSize || 10
-      }
+      totalRecords,
     });
   }
 

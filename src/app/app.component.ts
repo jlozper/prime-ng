@@ -4,10 +4,8 @@ import { TreeNode } from 'primeng/api/treenode';
 import { AutocompleteTreeService } from './services/autocomplete-tree.service';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { tap, switchMap, takeUntil } from 'rxjs/operators';
-import { ListData } from './ui/autocomplete-table/models/list-data.model';
-import { TableColumn } from './ui/autocomplete-table/models/table-column.model';
-import { SearchParams } from './ui/autocomplete-table/models/search-params.model';
 import { AutocompleteTableService } from './services/autocomplete-table.service';
+import { ListData, TableColumn, SearchParams } from './ui/autocomplete-table/models';
 
 @Component({
   selector: 'app-root',
