@@ -1,4 +1,6 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef, Output, EventEmitter, OnDestroy, ViewChild, Optional } from '@angular/core';
+import {
+  Component, OnInit, Input, ChangeDetectionStrategy, Self, ChangeDetectorRef, Output, EventEmitter, OnDestroy, Optional
+} from '@angular/core';
 import { FormControl, ControlValueAccessor, NgControl  } from '@angular/forms';
 
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
@@ -7,7 +9,6 @@ import { pluck, tap, withLatestFrom, shareReplay, takeUntil } from 'rxjs/operato
 import { LazyLoadEvent } from 'primeng/api/public_api';
 
 import { AutocompleteEvent, TableColumn, ListData, SearchParams } from './models';
-import { Paginator } from 'primeng/paginator';
 
 
 @Component({
@@ -41,13 +42,13 @@ export class AutocompleteTableComponent<T>  implements ControlValueAccessor, OnI
   formControl: FormControl;
   private lazyLoadSubject = new Subject<boolean>(); // Subject para el evento de obtención de datos del servidor
   private destroySubject = new Subject<boolean>();
-
+  
   onChange = (_: any) => {};
   onTouch = () => {};
 
   constructor(
     @Self() @Optional() public ngControl: NgControl,
-    private changeDetectionRef: ChangeDetectorRef
+    private changeDetectionRef: ChangeDetectorRef,
   ) {
     ngControl.valueAccessor = this;
   }

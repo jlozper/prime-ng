@@ -20,6 +20,7 @@ export class AutocompleteTreeComponent  implements ControlValueAccessor, OnInit 
   @Input() field = 'label'; // Campo a mostrar en caso de utilizar objetos como valor en el autocomplete
   @Input() emptyMessage = 'No existen resultados'; // Mensaje en caso de que no se obtengan resultados en la búsqueda
   @Input() selectionMode = 'single';
+  @Input() dropdown = true;
   @Input() listData$: Observable<TreeNode[]>; // Listado de datos a utilizar en el tree
 
   formControl: FormControl;

@@ -9,6 +9,7 @@
     },
     "array-type": false,
     "arrow-return-shorthand": true,
+    "arrow-parens": false,
     "curly": true,
     "deprecation": {
       "severity": "warning"
@@ -54,6 +55,8 @@
         ]
       }
     ],
+    "member-access": false,
+    "no-consecutive-blank-lines": false,
     "no-console": [
       true,
       "debug",
@@ -75,6 +78,8 @@
       true,
       "as-needed"
     ],
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
     "quotemark": [
       true,
       "single"
@@ -93,6 +98,8 @@
         "named": "never"
       }
     },
+    "trailing-comma": false,
+    "no-trailing-whitespace": false,
     "typedef-whitespace": {
       "options": [
         {
